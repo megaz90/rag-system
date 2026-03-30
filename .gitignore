@@ -1,0 +1,15 @@
+# virtual environments
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# docs (optional build outputs or generated files)
+docs/
+
+# databases (if using RAG / ChromaDB)
+chroma/
+*.db
+*.sqlite
