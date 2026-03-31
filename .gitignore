@@ -7,7 +7,7 @@ __pycache__/
 *.pyc
 
 # docs (optional build outputs or generated files)
-docs/*
+docs/
 
 # databases (if using RAG / ChromaDB)
 chroma/
