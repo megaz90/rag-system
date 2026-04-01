@@ -84,8 +84,8 @@ Shows high-level business status and shortcuts to daily work.
 `Primary Sidebar > Dashboard`
 
 **Visual Elements:**  
-- Home icon in sidebar  
-- Top summary cards/charts (if enabled)  
+- Home icon in sidebar
+- Top summary cards/charts (if enabled)
 - Header page title
 
 **Step-by-Step Usage:**

@@ -42,9 +42,16 @@ def plain_text_chunking(
     return chunks
 
 
-def markdown_text_chunking(markdown_text, min_tokens=120, max_tokens=400):
+def markdown_text_chunking(
+    markdown_text: str, min_tokens: int = 120, max_tokens: int = 400
+) -> list[str]:
     """
-    Smart chunking that respects structure but enforces size limits
+    Smart markdown chunking strategy that:
+
+    - Preserves document structure (headings)
+    - Keeps chunks within size limits
+    - Combines small sections
+    - Splits large sections into smaller pieces
     """
     import re
 

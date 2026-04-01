@@ -1,12 +1,34 @@
 from datetime import datetime
 from pathlib import Path
+from typing import List, TypedDict
 
 from src.chunker import markdown_text_chunking, plain_text_chunking
 from src.core.database import db
 from src.core.utils import get_content_hash
 
 
-def retrieve_documents():
+class Document(TypedDict):
+    name: str
+    path: str
+    text: str
+    type: str
+
+
+def retrieve_documents() -> List[Document]:
+    """
+    Reads all supported documents from the data folder.
+
+    Supported formats:
+    - .txt
+    - .md
+
+    Returns:
+        List of Document dictionaries containing:
+        - file name
+        - full file path
+        - raw text content
+        - file type
+    """
     BASE_DIR = Path(__file__).resolve().parent.parent
     accepted_extensions = [".txt", ".md"]
     files = Path(BASE_DIR / "data/documents").rglob("*")
@@ -28,34 +50,20 @@ def retrieve_documents():
     return docs
 
 
-def get_indexed_documents(collection, text: str):
-    """Get list of already indexed documents where the source file has been updated"""
-    try:
-        results = collection.get()
+def build_index() -> None:
+    """
+    Main ingestion pipeline for RAG system.
 
-        # Extract unique source files
-        updated_indexed_docs = set()
-        unchanged_indexed_docs = set()
-
-        for meta in results.get("metadatas", []):
-            if (
-                meta
-                and "file_hash" in meta
-                and meta["file_hash"] != get_content_hash(text)
-            ):
-                updated_indexed_docs.add(meta["source"])
-            else:
-                unchanged_indexed_docs.add(meta["source"])
-
-        return updated_indexed_docs, unchanged_indexed_docs
-    except Exception as e:
-        print("An error occurred:", str(e))
-        return set()
-
-
-def build_index(collection_name: str) -> None:
-
-    collection = db.chroma_client.get_or_create_collection(name=collection_name)
+    Workflow:
+    1. Load documents from disk
+    2. Check if they are already indexed
+    3. Skip unchanged files
+    4. Delete outdated chunks
+    5. Chunk document
+    6. Generate embeddings
+    7. Store in ChromaDB
+    """
+    collection = db.get_or_create_collection()
 
     docs = retrieve_documents()
 
@@ -64,17 +72,19 @@ def build_index(collection_name: str) -> None:
     processed_docs = 0
 
     for doc in docs:
-        # Skip if already indexed and not updated
-        changed_indexed_docs, unchanged_docs = get_indexed_documents(
-            collection, doc["text"]
-        )
+        file_hash = get_content_hash(doc["text"])
 
-        if doc["name"] in unchanged_docs:
-            print(f"Skipping {doc['name']} (already indexed)")
-            skipped_docs += 1
-            continue
+        existing = collection.get(where={"source": doc["name"]})
 
-        collection.delete(where={"file_name": doc["name"]})
+        if existing["metadatas"]:
+            old_hash = existing["metadatas"][0]["file_hash"]
+
+            if old_hash == file_hash:
+                print(f"Skipping {doc['name']} (unchanged)")
+                skipped_docs += 1
+                continue
+
+            collection.delete(where={"source": doc["name"]})
 
         print(f"Processing: {doc['name']}")
 
@@ -90,6 +100,8 @@ def build_index(collection_name: str) -> None:
                 f"No chunks created from {doc['name']}. The document is probably empty."
             )
             continue
+        else:
+            processed_docs += 1
 
         embeddings = db.embedding_model.encode(chunks).tolist()
 
