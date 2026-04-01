@@ -1,15 +1,25 @@
-# virtual environments
-.venv/
+.env
 venv/
+env/
+.venv/
 
-# Python cache
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
 
-# docs (optional build outputs or generated files)
-docs/*
+# Data
+data/chroma_db/
+data/documents/*.pdf
+data/documents/*.docx
 
-# databases (if using RAG / ChromaDB)
-chroma/
-*.db
-*.sqlite
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
