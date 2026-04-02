@@ -1,8 +1,8 @@
 import argparse
 import sys
 
-from src.ingest import build_index
-from src.query import ask_question, search_database
+from src.ingest import document_indexer
+from src.query import rag_querier
 
 
 def handle_search(args) -> None:
@@ -21,7 +21,7 @@ def handle_search(args) -> None:
     print("-" * 60)
     print(f"Searching for : {args.query}")
     print("-" * 60)
-    results = search_database(args.query, args.top_k)
+    results = document_indexer.search_database(args.query, args.top_k)
 
     if not results["documents"][0]:
         print("-" * 60)
@@ -54,7 +54,7 @@ def handle_question(args) -> None:
         print("Error: Please provide a query with -q or --question")
         sys.exit(1)
 
-    ask_question(args.question)
+    rag_querier.ask_question(args.question)
 
 
 def handle_index() -> None:
@@ -67,7 +67,7 @@ def handle_index() -> None:
     - Embeds them
     - Stores them in vector DB (ChromaDB)
     """
-    build_index()
+    document_indexer.build_index()
 
 
 def main() -> None:

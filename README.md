@@ -67,6 +67,13 @@ Download [Ollama](https://ollama.com) and install it. After installing you will 
 ollama pull qwen3.5:0.8b
 ```
 
+## 5. Create .env
+Make sure to create `.env` file before running any script. There are variables for LLM Models, Embedding Models etc.
+
+```bash
+cp .env.example .env
+```
+
 # Usage
 
 ## Build index (ingest documents)
