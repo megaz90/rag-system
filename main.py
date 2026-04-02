@@ -21,7 +21,7 @@ def handle_search(args) -> None:
     print("-" * 60)
     print(f"Searching for : {args.query}")
     print("-" * 60)
-    results = document_indexer.search_database(args.query, args.top_k)
+    results = rag_querier.search_database(args.query, args.top_k)
 
     if not results["documents"][0]:
         print("-" * 60)

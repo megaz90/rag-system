@@ -18,13 +18,19 @@ class OllamaChatModel:
         ]
 
     def generate(self, prompt: str) -> ChatResponse:
-        message = self.build_messages(prompt)
+        messages = self.build_messages(prompt)
+        try:
+            return chat(
+                model=MODEL_NAME,
+                messages=messages,
+            )
 
-        return chat(
-            model=MODEL_NAME,
-            messages=message,
-        )
+        except Exception as e:
+            raise RuntimeError(f"LLM generation failed: {e}")
 
 
 class OpenAIChatModel:
+    """
+    TODO: Add OpenAIChatModel
+    """
     pass
