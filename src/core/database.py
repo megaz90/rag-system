@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Any, Dict
 
 import chromadb
 from chromadb.api.models.Collection import Collection
@@ -43,11 +42,40 @@ class VectorDatabase:
             path=str(BASE_DIR / "data/chroma_db")
         )
 
+    def _normalize_results(self, results: QueryResult) -> list[dict]:
+        """Normalize ChromaDB query results into a list of dictionaries."""
+
+        documents = results.get("documents") or []
+        metadatas = results.get("metadatas") or []
+        ids = results.get("ids") or []
+        distances = results.get("distances") or []
+
+        # Chroma returns nested lists
+        if documents and isinstance(documents[0], list):
+            documents = documents[0]
+            metadatas = metadatas[0] if metadatas else []
+            ids = ids[0] if ids else []
+            distances = distances[0] if distances else []
+
+        normalized = []
+
+        for i, doc in enumerate(documents):
+            normalized.append(
+                {
+                    "id": ids[i] if i < len(ids) else None,
+                    "text": doc,
+                    "metadata": metadatas[i] if i < len(metadatas) else {},
+                    "score": distances[i] if i < len(distances) else None,
+                }
+            )
+
+        return normalized
+
     def get_or_create_collection(self) -> Collection:
         """Retrieve existing collection or create it if it doesn't exist."""
         return self.chroma_client.get_or_create_collection(name=COLLECTION_NAME)
-    
-    def search_database(self, query: str, top_result: int = 3) -> QueryResult:
+
+    def search_database(self, query: str, top_result: int = 3) -> list[dict]:
         """
         Retrieve the most similar document chunks from the vector database.
 
@@ -58,8 +86,10 @@ class VectorDatabase:
         """
         query_embeddings = db.embedding_model.encode([query])[0].tolist()
         collection = db.get_or_create_collection()
-
-        return collection.query(query_embeddings=query_embeddings, n_results=top_result)
+        results = collection.query(
+            query_embeddings=query_embeddings, n_results=top_result
+        )
+        return self._normalize_results(results)
 
 
 db = VectorDatabase()

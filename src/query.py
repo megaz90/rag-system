@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, List
 
 from src.core.llm.llm_chat_models import OllamaChatModel
 from src.query_translator import QueryTranslator
@@ -34,13 +34,12 @@ class RAGQuerier:
         response = OllamaChatModel().generate(prompt)
 
         return response.message.content
-    
-    def query_translation_pipeline(self, query: str):
-        """
-        """
-        translator = QueryTranslator().multi_query_translator(query)
-        
-        return translator
+
+    def query_translation_pipeline(self, query: str) -> List[str]:
+        """ """
+        translator_docs = QueryTranslator().multi_query_translator(query)
+
+        return [doc["text"] for doc in translator_docs]
 
     def ask_question(self, query: str) -> None:
         """
@@ -64,5 +63,6 @@ class RAGQuerier:
         print("-" * 60)
         print(answer)
         print("-" * 60)
+
 
 rag_querier = RAGQuerier()
