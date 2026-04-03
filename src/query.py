@@ -37,7 +37,7 @@ class RAGQuerier:
 
     def query_translation_pipeline(self, query: str) -> List[str]:
         """ """
-        translator_docs = QueryTranslator().multi_query_translator(query)
+        translator_docs = QueryTranslator().rag_fusion_translator(query)
 
         return [doc["text"] for doc in translator_docs]
 

@@ -126,3 +126,21 @@ class QueryTranslator:
         docs = self.fetch_relevant_docs(prompt)
 
         return self.reciprocal_rank_fusion(docs)
+
+    def step_back_translator(self, question: str):
+        """
+        TODO: Implementation to be added.
+        """
+        pass
+    
+    def decomposition_translator(self, question: str):
+        """
+        TODO: Implementation to be added.
+        """
+        pass
+    
+    def hyde_translator(self, question: str):
+        """
+        TODO: Implementation to be added.
+        """
+        pass
