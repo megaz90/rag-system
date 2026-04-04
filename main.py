@@ -1,8 +1,8 @@
 import argparse
 import sys
 
-from src.ingest import document_indexer
-from src.query import rag_querier
+from src.ingestion.ingest import document_indexer
+from src.retrieval.query import rag_querier
 
 
 def handle_search(args) -> None:

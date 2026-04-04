@@ -18,6 +18,9 @@ class OllamaChatModel:
         ]
 
     def generate(self, prompt: str) -> ChatResponse:
+        """
+        TODO: Add a normalizer function to normalize the response
+        """
         messages = self.build_messages(prompt)
         try:
             return chat(
@@ -33,4 +36,5 @@ class OpenAIChatModel:
     """
     TODO: Add OpenAIChatModel
     """
+
     pass

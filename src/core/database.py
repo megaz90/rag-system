@@ -3,9 +3,10 @@ from pathlib import Path
 import chromadb
 from chromadb.api.models.Collection import Collection
 from chromadb.api.types import QueryResult
-from sentence_transformers import SentenceTransformer
 
-from .config import COLLECTION_NAME, EMBEDDINGS_MODEL
+from src.core.embeddings import vector_embedding
+
+from .config import COLLECTION_NAME
 
 
 class VectorDatabase:
@@ -37,7 +38,6 @@ class VectorDatabase:
 
         BASE_DIR = Path(__file__).resolve().parents[2]
 
-        self.embedding_model = SentenceTransformer(EMBEDDINGS_MODEL)
         self.chroma_client = chromadb.PersistentClient(
             path=str(BASE_DIR / "data/chroma_db")
         )
@@ -84,8 +84,8 @@ class VectorDatabase:
         - Query ChromaDB using cosine similarity
         - Return top matching chunks
         """
-        query_embeddings = db.embedding_model.encode([query])[0].tolist()
-        collection = db.get_or_create_collection()
+        query_embeddings = vector_embedding.embedding_model.encode([query])[0].tolist()
+        collection = self.get_or_create_collection()
         results = collection.query(
             query_embeddings=query_embeddings, n_results=top_result
         )

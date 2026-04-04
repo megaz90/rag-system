@@ -2,9 +2,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, TypedDict
 
-from src.chunker import markdown_text_chunking, plain_text_chunking
 from src.core.database import db
+from src.core.embeddings import vector_embedding
 from src.core.utils import get_content_hash
+from src.ingestion.chunker import markdown_text_chunking, plain_text_chunking
 
 
 class Document(TypedDict):
@@ -15,9 +16,6 @@ class Document(TypedDict):
 
 
 class DocumentIndexer:
-    def __init(self):
-        pass
-
     def retrieve_documents(self) -> List[Document]:
         """
         Reads all supported documents from the data folder.
@@ -106,7 +104,7 @@ class DocumentIndexer:
             else:
                 processed_docs += 1
 
-            embeddings = db.embedding_model.encode(chunks).tolist()
+            embeddings = vector_embedding.embedding_model.encode(chunks).tolist()
 
             collection.upsert(
                 documents=chunks,
