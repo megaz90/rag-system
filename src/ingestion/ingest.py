@@ -12,11 +12,12 @@ class Document(TypedDict):
     name: str
     path: str
     text: str
+    category: str
     type: str
 
 
 class DocumentIndexer:
-    def retrieve_documents(self) -> List[Document]:
+    def _retrieve_documents(self) -> List[Document]:
         """
         Reads all supported documents from the data folder.
 
@@ -31,18 +32,21 @@ class DocumentIndexer:
             - raw text content
             - file type
         """
-        BASE_DIR = Path(__file__).resolve().parent.parent
+        BASE_DIR = Path(__file__).resolve().parents[2]
         accepted_extensions = [".txt", ".md"]
         files = Path(BASE_DIR / "data/documents").rglob("*")
         docs = []
         for doc in files:
             if doc.suffix in accepted_extensions:
+                doc_folder = doc.parent.name
+                category_name = doc_folder.replace("_docs", "")
                 docs.append(
                     {
                         "name": doc.name,
                         "path": str(doc),
-                        "text": doc.read_text(encoding="utf-8"),
+                        "category": category_name,
                         "type": doc.suffix,
+                        "text": doc.read_text(encoding="utf-8"),
                     }
                 )
 
@@ -66,7 +70,7 @@ class DocumentIndexer:
         """
         collection = db.get_or_create_collection()
 
-        docs = self.retrieve_documents()
+        docs = self._retrieve_documents()
 
         # Track statistics
         skipped_docs = 0
@@ -115,6 +119,7 @@ class DocumentIndexer:
                         "source": doc["name"],
                         "source_path": doc["path"],
                         "chunk_id": i,
+                        "category": doc["category"],
                         "file_type": doc["type"],
                         "file_hash": get_content_hash(doc["text"]),
                         "indexed_at": datetime.now().isoformat(),

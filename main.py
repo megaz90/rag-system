@@ -1,8 +1,9 @@
 import argparse
 import sys
 
+from src.core.database import VectorDatabase
 from src.ingestion.ingest import document_indexer
-from src.retrieval.query import rag_querier
+from src.routing.data_source import DocumentRouter
 
 
 def handle_search(args) -> None:
@@ -21,25 +22,20 @@ def handle_search(args) -> None:
     print("-" * 60)
     print(f"Searching for : {args.query}")
     print("-" * 60)
-    results = rag_querier.search_database(args.query, args.top_k)
+    results = VectorDatabase().search_database(args.query, args.top_k)
 
-    if not results["documents"][0]:
+    if len(results) == 0:
         print("-" * 60)
         print("No results found.")
         print("-" * 60)
         return
 
-    documents = results["documents"][0]
-    metadatas = results["metadatas"][0]
-    distances = results["distances"][0] if "distances" in results else None
+    print(f"\nFound {len(results)} results:\n")
 
-    print(f"\nFound {len(documents)} results:\n")
-
-    for i, (doc, meta) in enumerate(zip(documents, metadatas), 1):
-        score = f" (distance: {distances[i-1]:.3f})" if distances else ""
-        print(f"{i}. From: {meta['source']}{score}")
-        print(f"   {doc[:300]}...")
-        print()
+    for i, doc in enumerate(results, start=1):
+        score = f" (score: {doc['score']:.3f})"
+        print(f"{i}. From: {doc['metadata']['source']}{score}")
+        print(f"   {doc['text'][:300]}...")
 
 
 def handle_question(args) -> None:
@@ -54,7 +50,8 @@ def handle_question(args) -> None:
         print("Error: Please provide a query with -q or --question")
         sys.exit(1)
 
-    rag_querier.ask_question(args.question)
+    # RAGQuerier().ask_question(args.question)
+    DocumentRouter().route(args.question)
 
 
 def handle_index() -> None:
