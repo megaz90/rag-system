@@ -1,14 +1,15 @@
 from ollama import ChatResponse, chat
 
 from src.core.config import MODEL_NAME, SYSTEM_PROMPT
+from src.core.llm.base import BaseLLMChatModel
 
 
-class OllamaChatModel:
+class OllamaChatModel(BaseLLMChatModel):
     """
     Wrapper for ollama chat model
     """
 
-    def __init__(self, system_content: str = SYSTEM_PROMPT):
+    def __init__(self, system_content: str = SYSTEM_PROMPT, **kwargs):
         self.system_content = system_content
 
     def build_messages(self, user_content: str):
@@ -32,9 +33,10 @@ class OllamaChatModel:
             raise RuntimeError(f"LLM generation failed: {e}")
 
 
-class OpenAIChatModel:
+class OpenAIChatModel(BaseLLMChatModel):
     """
     TODO: Add OpenAIChatModel
     """
 
-    pass
+    def generate(self, prompt: str):
+        pass
