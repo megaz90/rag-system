@@ -2,6 +2,7 @@ from typing import Dict, List
 
 from src.core.database import db
 from src.core.llm.factory import llm_provider
+from src.schemas.query_context import QueryContext
 
 
 class QueryTranslator:
@@ -23,7 +24,9 @@ class QueryTranslator:
     of search space before applying ranking or fusion techniques (e.g., RRF).
     """
 
-    def fetch_relevant_docs(self, prompt: str) -> List[List[Dict]]:
+    def _fetch_relevant_docs(
+        self, prompt: str, context: QueryContext
+    ) -> List[List[Dict]]:
         """
         Fetch relevant documents from the vector database based on the prompt.
         """
@@ -33,7 +36,8 @@ class QueryTranslator:
 
         docs = []
         for query in queries if queries else []:
-            results = db.search_database(query)
+            context.rewritten_query = query
+            results = db.search_database(context)
             if not results:
                 print("No results returned from DB.")
                 continue
@@ -42,7 +46,7 @@ class QueryTranslator:
 
         return docs
 
-    def multi_query_translator(self, question: str) -> List[Dict]:
+    def multi_query_translator(self, context: QueryContext) -> List[Dict]:
         """
         Multi query translator method takes a question from the user and returns a list of alternative questions.
         This is a "Sub-question" strategy which breaks down the user query into multiple questions.
@@ -59,9 +63,9 @@ class QueryTranslator:
         given user question to retrieve the relevant information from the documents from a vector database. By 
         generating multiple perspectives on the user question, your goal is to help the user overcome some of the 
         limitations of the distance-based similarity search.
-        Provide these alternative questions separated by newlines. Original question: {question}"""
+        Provide these alternative questions separated by newlines. Original question: {context.query}"""
 
-        docs = self.fetch_relevant_docs(prompt)
+        docs = self._fetch_relevant_docs(prompt, context)
 
         seen = set()
         unique_docs = []
@@ -108,7 +112,7 @@ class QueryTranslator:
 
         return [item["doc"] for item in sorted_docs]
 
-    def rag_fusion_translator(self, question: str) -> List[Dict]:
+    def rag_fusion_translator(self, context: QueryContext) -> List[Dict]:
         """
         Performs multi-query RAG fusion retrieval using Reciprocal Rank Fusion (RRF).
 
@@ -120,26 +124,26 @@ class QueryTranslator:
         """
 
         prompt = f"""You are a helpful assistant that generates multiple search queries based on a single input query.\n
-        Generate multiple search queries related to: {question} \n
+        Generate multiple search queries related to: {context.query} \n
         Output (4 queries):"""
 
-        docs = self.fetch_relevant_docs(prompt)
+        docs = self._fetch_relevant_docs(prompt, context)
 
         return self.reciprocal_rank_fusion(docs)
 
-    def step_back_translator(self, question: str):
+    def step_back_translator(self, context: QueryContext):
         """
         TODO: Implementation to be added.
         """
         pass
-    
-    def decomposition_translator(self, question: str):
+
+    def decomposition_translator(self, context: QueryContext):
         """
         TODO: Implementation to be added.
         """
         pass
-    
-    def hyde_translator(self, question: str):
+
+    def hyde_translator(self, context: QueryContext):
         """
         TODO: Implementation to be added.
         """

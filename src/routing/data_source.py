@@ -1,9 +1,11 @@
 import json
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 from src.core.llm.factory import llm_provider
+from src.retrieval.query import RAGQuerier
 from src.routing.base import BaseRouter
+from src.schemas.query_context import QueryContext
 
 
 class DocumentRouter(BaseRouter):
@@ -37,8 +39,11 @@ class DocumentRouter(BaseRouter):
             print(e)
             return [], 0.0
 
-    def _fetch_data_source(self, query: str):
-        sources_str = "\n".join(self._discover_categories().keys())
+    def fetch_data_source(self, context: QueryContext) -> List[str]:
+        all_sources_keys = list(self._discover_categories().keys())
+
+        sources_str = "\n".join(all_sources_keys)
+
         system_prompt = f"""You are a data source router.
             Available sources:
             {sources_str}
@@ -55,18 +60,29 @@ class DocumentRouter(BaseRouter):
             - 0.7 = likely correct
             - 0.5 = uncertain but reasonable
             - below 0.5 = weak match
-            
+
             Format:
             {{
             "sources": ["source_name", ....]
-            "confidence": 0.0 - 1.0
+            "confidence": 0.0
             }}
             """
-        response = llm_provider(system_content=system_prompt).generate(query)
+        response = llm_provider(system_content=system_prompt).generate(context.query)
 
-        sources, confidence = self._parse_and_validate(response.message.content)
+        filtered_sources, confidence = self._parse_and_validate(
+            response.message.content
+        )
 
-        return sources
+        # If confidence is less than 0.5, return all sources
+        if confidence < 0.5:
+            return all_sources_keys
 
-    def route(self, query: str):
-        self._fetch_data_source(query)
+        # Returning top 2 sources
+        return filtered_sources[:2] if len(filtered_sources) > 2 else filtered_sources
+
+    def route(self, context: QueryContext):
+        data_sources = self.fetch_data_source(context)
+
+        RAGQuerier().ask_question(
+            QueryContext(query=context.query, sources=data_sources)
+        )

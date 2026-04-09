@@ -1,10 +1,12 @@
 from pathlib import Path
+from typing import cast
 
 import chromadb
 from chromadb.api.models.Collection import Collection
-from chromadb.api.types import QueryResult
+from chromadb.api.types import QueryResult, Where
 
 from src.core.embeddings import vector_embedding
+from src.schemas.query_context import QueryContext
 
 from .config import COLLECTION_NAME
 
@@ -75,7 +77,7 @@ class VectorDatabase:
         """Retrieve existing collection or create it if it doesn't exist."""
         return self.chroma_client.get_or_create_collection(name=COLLECTION_NAME)
 
-    def search_database(self, query: str, top_result: int = 3) -> list[dict]:
+    def search_database(self, context: QueryContext, top_result: int = 3) -> list[dict]:
         """
         Retrieve the most similar document chunks from the vector database.
 
@@ -84,10 +86,24 @@ class VectorDatabase:
         - Query ChromaDB using cosine similarity
         - Return top matching chunks
         """
-        query_embeddings = vector_embedding.embedding_model.encode([query])[0].tolist()
+        if context.rewritten_query is None:
+            query_embeddings = vector_embedding.embedding_model.encode([context.query])[
+                0
+            ].tolist()
+        else:
+            query_embeddings = vector_embedding.embedding_model.encode(
+                [context.rewritten_query]
+            )[0].tolist()
+
         collection = self.get_or_create_collection()
+
+        where = (
+            cast(Where, {"category": {"$in": context.sources}})
+            if context.sources
+            else None
+        )
         results = collection.query(
-            query_embeddings=query_embeddings, n_results=top_result
+            query_embeddings=query_embeddings, n_results=top_result, where=where
         )
         return self._normalize_results(results)
 
