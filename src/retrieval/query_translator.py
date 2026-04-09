@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from src.core.database import db
+from src.core.database import VectorDatabase
 from src.core.llm.factory import llm_provider
 from src.schemas.query_context import QueryContext
 
@@ -37,7 +37,7 @@ class QueryTranslator:
         docs = []
         for query in queries if queries else []:
             context.rewritten_query = query
-            results = db.search_database(context)
+            results = VectorDatabase().search_database(context)
             if not results:
                 print("No results returned from DB.")
                 continue

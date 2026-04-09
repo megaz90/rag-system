@@ -34,6 +34,3 @@ class RAGQuerier:
         print("-" * 60)
         print(answer)
         print("-" * 60)
-
-
-rag_querier = RAGQuerier()

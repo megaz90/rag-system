@@ -2,7 +2,7 @@ import argparse
 import sys
 
 from src.core.database import VectorDatabase
-from src.ingestion.ingest import document_indexer
+from src.ingestion.ingest import DocumentIndexer
 from src.routing.data_source import DocumentRouter
 
 
@@ -64,7 +64,7 @@ def handle_index() -> None:
     - Embeds them
     - Stores them in vector DB (ChromaDB)
     """
-    document_indexer.build_index()
+    DocumentIndexer().build_index()
 
 
 def main() -> None:

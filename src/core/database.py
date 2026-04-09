@@ -5,7 +5,7 @@ import chromadb
 from chromadb.api.models.Collection import Collection
 from chromadb.api.types import QueryResult, Where
 
-from src.core.embeddings import vector_embedding
+from src.core.embeddings import VectorEmbedding
 from src.schemas.query_context import QueryContext
 
 from .config import COLLECTION_NAME
@@ -87,13 +87,15 @@ class VectorDatabase:
         - Return top matching chunks
         """
         if context.rewritten_query is None:
-            query_embeddings = vector_embedding.embedding_model.encode([context.query])[
-                0
-            ].tolist()
+            query_embeddings = (
+                VectorEmbedding().embedding_model.encode([context.query])[0].tolist()
+            )
         else:
-            query_embeddings = vector_embedding.embedding_model.encode(
-                [context.rewritten_query]
-            )[0].tolist()
+            query_embeddings = (
+                VectorEmbedding()
+                .embedding_model.encode([context.rewritten_query])[0]
+                .tolist()
+            )
 
         collection = self.get_or_create_collection()
 
@@ -106,6 +108,3 @@ class VectorDatabase:
             query_embeddings=query_embeddings, n_results=top_result, where=where
         )
         return self._normalize_results(results)
-
-
-db = VectorDatabase()

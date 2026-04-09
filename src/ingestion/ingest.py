@@ -2,8 +2,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, TypedDict
 
-from src.core.database import db
-from src.core.embeddings import vector_embedding
+from src.core.database import VectorDatabase
+from src.core.embeddings import VectorEmbedding
 from src.core.utils import get_content_hash
 from src.ingestion.chunker import markdown_text_chunking, plain_text_chunking
 
@@ -68,7 +68,7 @@ class DocumentIndexer:
         6. Generate embeddings
         7. Store in ChromaDB
         """
-        collection = db.get_or_create_collection()
+        collection = VectorDatabase().get_or_create_collection()
 
         docs = self._retrieve_documents()
 
@@ -108,7 +108,7 @@ class DocumentIndexer:
             else:
                 processed_docs += 1
 
-            embeddings = vector_embedding.embedding_model.encode(chunks).tolist()
+            embeddings = VectorEmbedding().embedding_model.encode(chunks).tolist()
 
             collection.upsert(
                 documents=chunks,
@@ -137,6 +137,3 @@ class DocumentIndexer:
             print(f"  • Documents skipped: {skipped_docs}")
             print(f"  • Total chunks in index: {collection.count()}")
             print("=" * 60)
-
-
-document_indexer = DocumentIndexer()

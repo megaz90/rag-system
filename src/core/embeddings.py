@@ -25,6 +25,3 @@ class VectorEmbedding:
         if self._initialized:
             return
         self.embedding_model = SentenceTransformer(EMBEDDINGS_MODEL)
-
-
-vector_embedding = VectorEmbedding()
