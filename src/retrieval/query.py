@@ -7,19 +7,39 @@ from src.schemas.query_context import QueryContext
 
 class RAGQuerier:
     def query_translation_pipeline(self, context: QueryContext) -> List[str]:
-        """ """
+        """
+        Translates and expands the user query into multiple reformulated queries and retrieves relevant documents using
+        different translation strategies.
+
+        This step improves retrieval quality by generating alternative phrasings of the original query.
+
+        Args:
+            context (QueryContext)
+
+        Returns:
+            List[str]
+        """
         translator_docs = QueryTranslator().rag_fusion_translator(context)
 
         return [doc["text"] for doc in translator_docs]
 
     def ask_question(self, context: QueryContext) -> None:
         """
-        End-to-end RAG pipeline:
+        End-to-end RAG pipeline execution.
 
-        1. Accept user question
-        2. Retrieve relevant chunks from vector DB
-        3. Send chunks + question to LLM
-        4. Print final answer
+        Workflow:
+        1. Accepts user query via QueryContext
+        2. Expands query and retrieves relevant documents
+           using the translation + RAG fusion pipeline
+        3. Passes retrieved context and query to the LLM
+           for final answer generation
+        4. Prints the formatted response to stdout
+
+        Args:
+            context (QueryContext): Contains the user query and metadata.
+
+        Returns:
+            None
         """
         print("-" * 60)
         print("Question: ", context.query)
