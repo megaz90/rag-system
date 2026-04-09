@@ -29,17 +29,12 @@ class RAGQuerier:
 
         Workflow:
         1. Accepts user query via QueryContext
-        2. Expands query and retrieves relevant documents
-           using the translation + RAG fusion pipeline
-        3. Passes retrieved context and query to the LLM
-           for final answer generation
+        2. Expands query and retrieves relevant documents using the translation + RAG fusion pipeline
+        3. Passes retrieved context and query to the LLM for final answer generation
         4. Prints the formatted response to stdout
 
         Args:
             context (QueryContext): Contains the user query and metadata.
-
-        Returns:
-            None
         """
         print("-" * 60)
         print("Question: ", context.query)
