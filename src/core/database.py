@@ -77,7 +77,7 @@ class VectorDatabase:
         """Retrieve existing collection or create it if it doesn't exist."""
         return self.chroma_client.get_or_create_collection(name=COLLECTION_NAME)
 
-    def search_database(self, context: QueryContext, top_result: int = 3) -> list[dict]:
+    def search_database(self, context: QueryContext, top_result: int = 4) -> list[dict]:
         """
         Retrieve the most similar document chunks from the vector database.
 
@@ -107,4 +107,9 @@ class VectorDatabase:
         results = collection.query(
             query_embeddings=query_embeddings, n_results=top_result, where=where
         )
+        # Fallback to searching all documents if no results are found.
+        if results["documents"] and len(results["documents"][0]) == 0:
+            results = collection.query(
+                query_embeddings=query_embeddings, n_results=top_result
+            )
         return self._normalize_results(results)

@@ -1,19 +1,12 @@
 from datetime import datetime
 from pathlib import Path
-from typing import List, TypedDict
+from typing import List
 
 from src.core.database import VectorDatabase
 from src.core.embeddings import VectorEmbedding
 from src.core.utils import get_content_hash
 from src.ingestion.chunker import markdown_text_chunking, plain_text_chunking
-
-
-class Document(TypedDict):
-    name: str
-    path: str
-    text: str
-    category: str
-    type: str
+from src.ingestion.types import Document
 
 
 class DocumentIndexer:
