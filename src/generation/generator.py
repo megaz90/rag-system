@@ -18,14 +18,25 @@ class LLMResponseGenerator:
         context = "\n\n".join(context_docs)
 
         # Create the prompt
-        prompt = f"""Answer the question based on the context below. If the answer cannot be found in the context, say
+        prompt = f"""
+        You are an expert assistant.
+
+        Carefully read the context and answer the question.
+
+        Rules:
+        - Base your answer ONLY on the context
+        - If multiple pieces of information are relevant, combine them
+        - If the answer is not in the context, say:
         "I don't have enough information to answer that."
+        - Do not make up information
+
         Context:
         {context}
 
         Question: {query}
 
-        Answer:"""
+        Answer:
+        """
 
         response = llm_provider().generate(prompt)
 

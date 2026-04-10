@@ -18,7 +18,7 @@ IMS is a permission-based, multi-tenant system. That means the menus, actions, a
 - Many modules do not provide a recycle bin or self-service restore option. Deletions should be treated carefully.
 - Reports and dashboards depend on the accuracy of the source transactions. If sales, purchases, recoveries, or expenses are incomplete, reports will also be incomplete.
 - Certain pages require prerequisite setup, especially **Terms Acceptance** and **Cash Account Setup**.
-- Some sensitive pages, especially report pages, may ask for password confirmation before opening.
+- Some sensitive pages, especially report pages, may ask for password confirmation before opening. 
 
 ## Getting Started
 

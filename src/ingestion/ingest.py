@@ -1,22 +1,16 @@
 from datetime import datetime
 from pathlib import Path
-from typing import List, TypedDict
+from typing import List
 
-from src.core.database import db
-from src.core.embeddings import vector_embedding
+from src.core.database import VectorDatabase
+from src.core.embeddings import VectorEmbedding
 from src.core.utils import get_content_hash
 from src.ingestion.chunker import markdown_text_chunking, plain_text_chunking
-
-
-class Document(TypedDict):
-    name: str
-    path: str
-    text: str
-    type: str
+from src.ingestion.types import Document
 
 
 class DocumentIndexer:
-    def retrieve_documents(self) -> List[Document]:
+    def _retrieve_documents(self) -> List[Document]:
         """
         Reads all supported documents from the data folder.
 
@@ -31,18 +25,21 @@ class DocumentIndexer:
             - raw text content
             - file type
         """
-        BASE_DIR = Path(__file__).resolve().parent.parent
+        BASE_DIR = Path(__file__).resolve().parents[2]
         accepted_extensions = [".txt", ".md"]
         files = Path(BASE_DIR / "data/documents").rglob("*")
         docs = []
         for doc in files:
             if doc.suffix in accepted_extensions:
+                doc_folder = doc.parent.name
+                category_name = doc_folder.replace("_docs", "")
                 docs.append(
                     {
                         "name": doc.name,
                         "path": str(doc),
-                        "text": doc.read_text(encoding="utf-8"),
+                        "category": category_name,
                         "type": doc.suffix,
+                        "text": doc.read_text(encoding="utf-8"),
                     }
                 )
 
@@ -64,9 +61,9 @@ class DocumentIndexer:
         6. Generate embeddings
         7. Store in ChromaDB
         """
-        collection = db.get_or_create_collection()
+        collection = VectorDatabase().get_or_create_collection()
 
-        docs = self.retrieve_documents()
+        docs = self._retrieve_documents()
 
         # Track statistics
         skipped_docs = 0
@@ -104,7 +101,7 @@ class DocumentIndexer:
             else:
                 processed_docs += 1
 
-            embeddings = vector_embedding.embedding_model.encode(chunks).tolist()
+            embeddings = VectorEmbedding().embedding_model.encode(chunks).tolist()
 
             collection.upsert(
                 documents=chunks,
@@ -115,6 +112,7 @@ class DocumentIndexer:
                         "source": doc["name"],
                         "source_path": doc["path"],
                         "chunk_id": i,
+                        "category": doc["category"],
                         "file_type": doc["type"],
                         "file_hash": get_content_hash(doc["text"]),
                         "indexed_at": datetime.now().isoformat(),
@@ -132,6 +130,3 @@ class DocumentIndexer:
             print(f"  • Documents skipped: {skipped_docs}")
             print(f"  • Total chunks in index: {collection.count()}")
             print("=" * 60)
-
-
-document_indexer = DocumentIndexer()

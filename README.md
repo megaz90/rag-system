@@ -33,28 +33,6 @@ Current flow:
 - Multi-query retrieval step before answer generation
 - CLI interface with `index`, `search`, and `ask` commands
 
-## Project Structure
-
-```text
-rag-system/
-├── data/
-│   ├── chroma_db/          # Persistent ChromaDB data
-│   └── documents/          # Source documents to index
-├── src/
-│   ├── core/
-│   │   ├── llm/
-│   │   ├── config.py
-│   │   ├── database.py
-│   │   └── utils.py
-│   ├── chunker.py
-│   ├── ingest.py
-│   ├── query.py
-│   └── query_translator.py
-├── main.py
-├── pyproject.toml
-└── .env.example
-```
-
 ## Requirements
 
 - Python 3.10+
