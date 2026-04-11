@@ -47,7 +47,6 @@ class QueryRouter(BaseRouter):
         {
         "route": "rag" | "web" | "llm",
         "confidence": 0.85,
-        "reasoning": "brief explanation"
         }
         """
 
@@ -111,6 +110,7 @@ class QueryRouter(BaseRouter):
 
     def route(self, context: QueryContext) -> None:
         classification = self.llm_classify(context)
+
         if classification == "llm":
             self.llm_pipeline(context)
         elif classification == "rag":

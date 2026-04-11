@@ -3,7 +3,7 @@ import sys
 
 from src.core.database import VectorDatabase
 from src.ingestion.ingest import DocumentIndexer
-from src.routing.data_source import DocumentRouter
+from src.routing.query_router import QueryRouter
 from src.schemas.query_context import QueryContext
 
 
@@ -51,7 +51,7 @@ def handle_question(args) -> None:
         print("Error: Please provide a query with -q or --question")
         sys.exit(1)
 
-    DocumentRouter().route(QueryContext(query=args.question))
+    QueryRouter().route(QueryContext(query=args.question))
 
 
 def handle_index() -> None:
