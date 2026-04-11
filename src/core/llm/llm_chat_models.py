@@ -1,7 +1,8 @@
 from ollama import ChatResponse, chat
 
-from src.core.config import MODEL_NAME, SYSTEM_PROMPT
+from src.core.config import MODEL_NAME
 from src.core.llm.base import BaseLLMChatModel
+from src.prompts.system_prompts import DEFAULT_SYSTEM_PROMPT
 
 
 class OllamaChatModel(BaseLLMChatModel):
@@ -9,7 +10,7 @@ class OllamaChatModel(BaseLLMChatModel):
     Wrapper for ollama chat model
     """
 
-    def __init__(self, system_content: str = SYSTEM_PROMPT, **kwargs):
+    def __init__(self, system_content: str = DEFAULT_SYSTEM_PROMPT, **kwargs):
         self.system_content = system_content
 
     def build_messages(self, user_content: str):

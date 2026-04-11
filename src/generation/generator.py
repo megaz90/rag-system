@@ -1,6 +1,7 @@
 from typing import List
 
 from src.core.llm.factory import llm_provider
+from src.prompts.system_prompts import MAIN_SYSTEM_PROMPT
 
 
 class LLMResponseGenerator:
@@ -19,6 +20,12 @@ class LLMResponseGenerator:
 
         # Create the prompt
         prompt = f"""
+        System Context:
+        {MAIN_SYSTEM_PROMPT}
+
+        ---
+
+        Task:
         You are an expert assistant.
 
         Carefully read the context and answer the question.
