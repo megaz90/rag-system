@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 from ollama import ChatResponse, chat
 
 from src.core.config import MODEL_NAME
@@ -13,7 +15,7 @@ class OllamaChatModel(BaseLLMChatModel):
     def __init__(self):
         self.system_content = DEFAULT_SYSTEM_PROMPT
 
-    def build_messages(self, system_content: str, user_content: str):
+    def build_messages(self, system_content: str, user_content: str) -> List[Dict]:
         return [
             {"role": "system", "content": system_content},
             {"role": "user", "content": user_content},
