@@ -11,44 +11,57 @@ class QueryRouter(BaseRouter):
         results = VectorDatabase().search_database(context=context, top_result=3)
         retrieved_docs = [doc["text"] for doc in results if results]
 
-        prompt = f"""You are an intelligent routing system.
+        system_prompt = """You are an intelligent query routing system.
 
-        You are given:
-        - A user query
-        - Retrieved documents from an internal database
+        Your task: Analyze the user's query and retrieved documents, then decide the best route.
 
-        Your job is to decide the best way to answer the query.
+        AVAILABLE ROUTES:
+        1. "rag" → Use retrieved documents (they contain the answer)
+        2. "web" → Search the web (documents are insufficient/irrelevant)
+        3. "llm" → Answer from general knowledge (no external data needed)
 
-        Routes:
-        1. "llm" → answer directly without retrieval
-        2. "rag" → use retrieved documents to answer
-        3. "web" → internal data is insufficient or irrelevant
+        ROUTING LOGIC:
 
-        Rules:
-        - If retrieved documents strongly match the query → choose "rag"
-        - If documents are weak, irrelevant, or low confidence → choose "web"
-        - If query is conceptual or does not require factual grounding → choose "llm"
+        Choose "rag" when:
+        - Documents directly answer the query
+        - Information is specific to the internal system/company
+        - At least 1 document is highly relevant
 
-        Consider:
-        - relevance of documents
-        - coverage of information
-        - completeness of context
+        Choose "web" when:
+        - Documents are off-topic or weakly related
+        - Query asks about recent events, external info, or current data
+        - Documents provide partial info but are incomplete
 
-        Return JSON ONLY:
+        Choose "llm" when:
+        - Query is general knowledge (definitions, concepts, how-to)
+        - No specific facts or data are required
+        - Query is conversational or opinion-based
+
+        CONFIDENCE SCALE:
+        - 0.9-1.0 = very certain about route
+        - 0.7-0.89 = confident but could use alternative
+        - 0.5-0.69 = uncertain, borderline decision
+        - below 0.5 = low confidence, might be wrong route
+
+        OUTPUT FORMAT (strict JSON):
         {
-        "route": "...",
-        "confidence": 0.0-1.0,
-        "doc_relevance_assessment": "high/medium/low"
+        "route": "rag" | "web" | "llm",
+        "confidence": 0.85,
+        "reasoning": "brief explanation"
         }
+        """
 
-        Query:
+        user_prompt = f"""Query:
         {context.query}
 
         Retrieved Documents:
         {retrieved_docs}
-        """
 
-        response = llm_provider().generate(prompt)
+        Determine the best route:"""
+
+        response = llm_provider().generate(
+            user_content=user_prompt, system_content=system_prompt
+        )
 
         return response.message.content
 

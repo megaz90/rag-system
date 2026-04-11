@@ -15,6 +15,8 @@ class LLMResponseGenerator:
         - Return generated response
         """
 
-        response = llm_provider(system_prompt=system_prompt).generate(user_prompt)
+        response = llm_provider().generate(
+            user_content=user_prompt, system_content=system_prompt
+        )
 
         return response.message.content

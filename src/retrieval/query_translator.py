@@ -30,7 +30,9 @@ class QueryTranslator:
         """
         Fetch relevant documents from the vector database based on the prompt.
         """
-        response = llm_provider(system_prompt=system_prompt).generate(user_prompt)
+        response = llm_provider().generate(
+            user_content=user_prompt, system_content=system_prompt
+        )
 
         queries = str(response.message.content).split("\n")
 

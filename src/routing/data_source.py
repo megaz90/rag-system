@@ -82,29 +82,38 @@ class DocumentRouter(BaseRouter):
         sources_str = "\n".join(all_sources_keys)
 
         system_prompt = f"""You are a data source router.
-            Available sources:
-            {sources_str}
 
-            Select the MOST relevant sources for the query and overall confidence level of the selection.
+        Available sources:
+        {sources_str}
 
-            Rules:
-            - Only choose from the given sources
-            - Return ONLY valid JSON
-            - Do not explain
+        Your task: Select the MOST relevant source(s) for the given query.
 
-            Confidence definition:
-            - 1.0 = extremely certain
-            - 0.7 = likely correct
-            - 0.5 = uncertain but reasonable
-            - below 0.5 = weak match
+        RULES:
+        - Only choose from the available sources listed above
+        - Select 1-3 sources maximum (prefer fewer if possible)
+        - Return ONLY valid JSON, no explanation
+        - If no sources match well, return empty array with low confidence
 
-            Format:
-            {{
-            "sources": ["source_name", ....]
-            "confidence": 0.0
-            }}
-            """
-        response = llm_provider(system_content=system_prompt).generate(context.query)
+        CONFIDENCE SCALE:
+        - 0.9-1.0 = extremely certain, exact match
+        - 0.7-0.89 = likely correct, good match
+        - 0.5-0.69 = uncertain but reasonable
+        - 0.0-0.49 = weak/no match
+
+        OUTPUT FORMAT (strict):
+        {{
+        "sources": ["source_name"],
+        "confidence": 0.85
+        }}
+        """
+
+        user_prompt = f"""Query: {context.query}
+
+        Select relevant sources:"""
+
+        response = llm_provider().generate(
+            user_content=user_prompt, system_content=system_prompt
+        )
 
         filtered_sources, confidence = self._parse_and_validate(
             response.message.content
