@@ -10,7 +10,6 @@ class LLMResponseGenerator:
         Generate a final answer using the LLM based on retrieved context.
 
         Steps:
-        - Combine retrieved chunks into a single context
         - Build a prompt with instruction + context + question
         - Send to LLM model
         - Return generated response

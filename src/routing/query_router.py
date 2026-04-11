@@ -83,7 +83,9 @@ class QueryRouter(BaseRouter):
         - Keep the answer clear and useful
         """
 
-        response = LLMResponseGenerator().generate_answer(user_prompt, system_prompt)
+        response = LLMResponseGenerator().generate_answer(
+            user_prompt=user_prompt, system_prompt=system_prompt
+        )
 
         print(response.message.content)
 

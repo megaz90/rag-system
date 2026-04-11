@@ -25,12 +25,12 @@ class QueryTranslator:
     """
 
     def _fetch_relevant_docs(
-        self, prompt: str, context: QueryContext
+        self, system_prompt: str, user_prompt: str, context: QueryContext
     ) -> List[List[Dict]]:
         """
         Fetch relevant documents from the vector database based on the prompt.
         """
-        response = llm_provider().generate(prompt)
+        response = llm_provider(system_prompt=system_prompt).generate(user_prompt)
 
         queries = str(response.message.content).split("\n")
 
@@ -59,13 +59,27 @@ class QueryTranslator:
         5. Search the vector database using the alternative questions
         6. Returns the unique results so that there are not duplicates
         """
-        prompt = f"""You are an AI language model assistant. your task is to generate five different versions of the 
-        given user question to retrieve the relevant information from the documents from a vector database. By 
-        generating multiple perspectives on the user question, your goal is to help the user overcome some of the 
-        limitations of the distance-based similarity search.
-        Provide these alternative questions separated by newlines. Original question: {context.query}"""
 
-        docs = self._fetch_relevant_docs(prompt, context)
+        system_prompt = """You are an AI assistant specialized in query expansion for vector database retrieval.
+
+        Your task is to generate 5 different versions of the user's question to improve document retrieval.
+
+        RULES:
+        - Generate diverse perspectives on the same question
+        - Keep semantic meaning intact
+        - Use different phrasings, synonyms, and angles
+        - Output ONLY the 5 questions, separated by newlines
+        - No explanations, no numbering, no extra text
+        """
+
+        # User prompt - the specific input
+        user_prompt = f"""Original question: {context.query}
+
+        Generate 5 alternative versions:"""
+
+        docs = self._fetch_relevant_docs(
+            system_prompt=system_prompt, user_prompt=user_prompt, context=context
+        )
 
         seen = set()
         unique_docs = []
@@ -123,11 +137,24 @@ class QueryTranslator:
         documents based on their relative positions across multiple ranked lists rather than raw similarity scores.
         """
 
-        prompt = f"""You are a helpful assistant that generates multiple search queries based on a single input query.\n
-        Generate multiple search queries related to: {context.query} \n
-        Output (4 queries):"""
+        system_prompt = """You are a search query expansion assistant.
 
-        docs = self._fetch_relevant_docs(prompt, context)
+        Your task is to generate 4 diverse search queries based on the user's original question.
+
+        RULES:
+        - Generate exactly 4 queries
+        - Make them semantically diverse but related
+        - Output one query per line
+        - No numbering, no bullets, no explanations
+        - Just the queries themselves
+        """
+        user_prompt = f"""Original query: {context.query}
+
+        Generate 4 search queries:"""
+
+        docs = self._fetch_relevant_docs(
+            system_prompt=system_prompt, user_prompt=user_prompt, context=context
+        )
 
         return self.reciprocal_rank_fusion(docs)
 

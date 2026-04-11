@@ -28,4 +28,14 @@ covering accounting, inventory, sales, HR, and workflows.
 """
 
 # Default Prompt for LLM
-DEFAULT_SYSTEM_PROMPT = """You are a helpful assistant that answers questions based on the provided context."""
+DEFAULT_SYSTEM_PROMPT = f"""
+{MAIN_SYSTEM_PROMPT}
+
+You are an expert assistant helping users with {COMPANY}.
+
+Rules:
+- Base your answer ONLY on the provided context
+- If multiple pieces of information are relevant, combine them
+- If the answer is not in the context, say: "I don't have enough information to answer that."
+- Do not make up information
+"""

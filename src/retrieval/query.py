@@ -1,7 +1,6 @@
 from typing import List
 
 from src.generation.generator import LLMResponseGenerator
-from src.prompts import MAIN_SYSTEM_PROMPT
 from src.retrieval.query_translator import QueryTranslator
 from src.schemas.query_context import QueryContext
 
@@ -43,37 +42,18 @@ class RAGQuerier:
         # Combine all context documents
         docs = "\n\n".join(documents)
 
-        # Create the prompt
-        prompt = f"""
-        System Context:
-        {MAIN_SYSTEM_PROMPT}
-
-        ---
-
-        Task:
-        You are an expert assistant.
-
-        Carefully read the context and answer the question.
-
-        Rules:
-        - Base your answer ONLY on the context
-        - If multiple pieces of information are relevant, combine them
-        - If the answer is not in the context, say:
-        "I don't have enough information to answer that."
-        - Do not make up information
-
+        user_prompt = f"""
         Context:
         {docs}
 
         Question: {context.query}
-
-        Answer:
         """
+
         print("-" * 60)
         print("Question: ", context.query)
         print("-" * 60)
 
-        answer = LLMResponseGenerator().generate_answer(user_prompt=context.query)
+        answer = LLMResponseGenerator().generate_answer(user_prompt=user_prompt)
 
         print("\n" + "-" * 60)
         print("Answer:")
