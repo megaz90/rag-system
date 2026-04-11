@@ -102,8 +102,12 @@ class QueryRouter(BaseRouter):
 
         print(response.message.content)
 
-    def web_search_pipeline(self):
-        pass
+    def web_search_pipeline(self, context: QueryContext):
+        """
+        For now the web search leads to llm pipeline to answer.
+        TODO: Implement web search pipeline and remove this method
+        """
+        self.llm_pipeline(QueryContext(query="What is the capital of France?"))
 
     def route(self, context: QueryContext) -> None:
         classification = self.llm_classify(context)
@@ -112,4 +116,4 @@ class QueryRouter(BaseRouter):
         elif classification == "rag":
             self.rag_pipeline(context)
         elif classification == "web":
-            self.web_search_pipeline()
+            self.web_search_pipeline(context)
