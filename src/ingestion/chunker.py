@@ -1,6 +1,9 @@
+from typing import List
+
+
 def plain_text_chunking(
     text: str, chunk_size: int = 500, overlap: int = 50
-) -> list[str]:
+) -> List[str]:
     """
     Splits a large text into smaller overlapping chunks for use in embedding-based retrieval systems (e.g., RAG).
 
@@ -44,7 +47,7 @@ def plain_text_chunking(
 
 def markdown_text_chunking(
     markdown_text: str, min_tokens: int = 120, max_tokens: int = 400
-) -> list[str]:
+) -> List[str]:
     """
     Smart markdown chunking strategy that:
 
