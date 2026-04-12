@@ -23,7 +23,7 @@ class RAGQuerier:
 
         return [doc["text"] for doc in translator_docs]
 
-    def ask_question(self, context: QueryContext) -> None:
+    def ask_question(self, context: QueryContext) -> str:
         """
         End-to-end RAG pipeline execution.
 
@@ -60,3 +60,5 @@ class RAGQuerier:
         print("-" * 60)
         print(answer)
         print("-" * 60)
+
+        return answer

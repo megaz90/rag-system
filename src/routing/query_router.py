@@ -1,3 +1,6 @@
+import json
+from typing import Dict
+
 from src.core.database import VectorDatabase
 from src.core.llm.factory import llm_provider
 from src.generation.generator import LLMResponseGenerator
@@ -7,7 +10,30 @@ from src.schemas.query_context import QueryContext
 
 
 class QueryRouter(BaseRouter):
-    def llm_classify(self, context: QueryContext):
+    def _execute(self, route: str, context: QueryContext) -> None:
+        if route == "llm":
+            self.llm_pipeline(context)
+        elif route == "rag":
+            self.rag_pipeline(context)
+        elif route == "web":
+            self.web_search_pipeline(context)
+
+    def _fallback(self, route, context):
+        # If LLM route fails, try a different route
+        # This means we already tried llm but confidence was too low so we try a different route
+        if route == "llm":
+            self.rag_pipeline(context)
+
+        # If RAG route fails, try a different route likely a web search
+        if route == "rag":
+            self.web_search_pipeline(context)
+
+        if route == "web":
+            self.llm_pipeline(context)
+
+        self.llm_pipeline(context)
+
+    def llm_classify(self, context: QueryContext) -> Dict:
         results = VectorDatabase().search_database(context=context, top_result=3)
         retrieved_docs = [doc["text"] for doc in results if results]
 
@@ -62,10 +88,10 @@ class QueryRouter(BaseRouter):
             user_content=user_prompt, system_content=system_prompt
         )
 
-        return response.message.content
+        return json.loads(response.message.content)
 
-    def rag_pipeline(self, context: QueryContext):
-        DocumentRouter().route(context)
+    def rag_pipeline(self, context: QueryContext) -> str:
+        return DocumentRouter().route(context)
 
     def llm_pipeline(self, context: QueryContext):
         system_prompt = """You are a highly reliable AI assistant operating in LLM-only mode.
@@ -98,8 +124,7 @@ class QueryRouter(BaseRouter):
         response = LLMResponseGenerator().generate_answer(
             user_prompt=user_prompt, system_prompt=system_prompt
         )
-
-        print(response.message.content)
+        return response.message.content
 
     def web_search_pipeline(self, context: QueryContext):
         """
@@ -111,9 +136,15 @@ class QueryRouter(BaseRouter):
     def route(self, context: QueryContext) -> None:
         classification = self.llm_classify(context)
 
-        if classification == "llm":
-            self.llm_pipeline(context)
-        elif classification == "rag":
-            self.rag_pipeline(context)
-        elif classification == "web":
-            self.web_search_pipeline(context)
+        route = classification["route"]
+        confidence = classification["confidence"]
+
+        # High confidence → trust
+        if confidence >= 0.75:
+            print(self._execute(route, context))
+
+        # Medium confidence try + fallback
+        if 0.6 <= confidence < 0.75:
+            print(self._execute(route, context))
+
+        print(self._fallback(route, context))

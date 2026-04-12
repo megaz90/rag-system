@@ -126,7 +126,7 @@ class DocumentRouter(BaseRouter):
         # Returning top 2 sources
         return filtered_sources[:2] if len(filtered_sources) > 2 else filtered_sources
 
-    def route(self, context: QueryContext) -> None:
+    def route(self, context: QueryContext) -> str:
         """
         Entry point for routing a query into the RAG pipeline.
 
@@ -140,6 +140,6 @@ class DocumentRouter(BaseRouter):
         """
         data_sources = self.fetch_data_source(context)
 
-        RAGQuerier().ask_question(
+        return RAGQuerier().ask_question(
             QueryContext(query=context.query, sources=data_sources)
         )
