@@ -44,7 +44,7 @@ Current flow:
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repository-url>
+git clone git@github.com:megaz90/rag-system.git
 cd rag-system
 ```
 
