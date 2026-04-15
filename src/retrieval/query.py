@@ -23,7 +23,7 @@ class RAGQuerier:
 
         return [doc["text"] for doc in translator_docs]
 
-    def ask_question(self, context: QueryContext) -> None:
+    def ask_question(self, context: QueryContext) -> str:
         """
         End-to-end RAG pipeline execution.
 
@@ -36,16 +36,29 @@ class RAGQuerier:
         Args:
             context (QueryContext): Contains the user query and metadata.
         """
+
+        documents = self.query_translation_pipeline(context)
+
+        # Combine all context documents
+        docs = "\n\n".join(documents)
+
+        user_prompt = f"""
+        Context:
+        {docs}
+
+        Question: {context.query}
+        """
+
         print("-" * 60)
         print("Question: ", context.query)
         print("-" * 60)
 
-        documents = self.query_translation_pipeline(context)
-
-        answer = LLMResponseGenerator().generate_answer(context.query, documents)
+        answer = LLMResponseGenerator().generate_answer(user_prompt=user_prompt)
 
         print("\n" + "-" * 60)
         print("Answer:")
         print("-" * 60)
         print(answer)
         print("-" * 60)
+
+        return answer

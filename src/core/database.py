@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import cast
+from typing import Dict, List, cast
 
 import chromadb
 from chromadb.api.models.Collection import Collection
@@ -44,7 +44,7 @@ class VectorDatabase:
             path=str(BASE_DIR / "data/chroma_db")
         )
 
-    def _normalize_results(self, results: QueryResult) -> list[dict]:
+    def _normalize_results(self, results: QueryResult) -> List[Dict]:
         """Normalize ChromaDB query results into a list of dictionaries."""
 
         documents = results.get("documents") or []
@@ -77,7 +77,7 @@ class VectorDatabase:
         """Retrieve existing collection or create it if it doesn't exist."""
         return self.chroma_client.get_or_create_collection(name=COLLECTION_NAME)
 
-    def search_database(self, context: QueryContext, top_result: int = 4) -> list[dict]:
+    def search_database(self, context: QueryContext, top_result: int = 4) -> List[Dict]:
         """
         Retrieve the most similar document chunks from the vector database.
 
